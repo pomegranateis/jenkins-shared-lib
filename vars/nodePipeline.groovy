@@ -7,7 +7,7 @@ def call(Map config = [:]) {
         }
 
         environment {
-            IMAGE_NAME = config.imageName ?: 'yourdockerhubusername/default-node-image'
+            IMAGE_NAME = config.imageName ?: 'pomegranatei/practical7'
         }
 
         stages {
