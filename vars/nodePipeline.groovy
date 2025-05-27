@@ -1,4 +1,6 @@
 def call(Map config = [:]) {
+    def imageName = config.imageName ?: 'pomegranatei/practical7'
+
     pipeline {
         agent any
 
@@ -7,7 +9,7 @@ def call(Map config = [:]) {
         }
 
         environment {
-            IMAGE_NAME = config.imageName ?: 'pomegranatei/practical7'
+            IMAGE_NAME = "${imageName}"  // <- MAKE SURE it's in double quotes!
         }
 
         stages {
@@ -17,21 +19,25 @@ def call(Map config = [:]) {
                 }
             }
 
+            stage('Build') {
+                steps {
+                    sh 'npm run build'
+                }
+            }
+
             stage('Test') {
                 steps {
-                    sh 'npm test || echo "No tests found"'
+                    sh 'npm test'
                 }
             }
 
-            stage('Build Docker') {
+            stage('Docker Build') {
                 steps {
-                    script {
-                        dockerImage = docker.build("${IMAGE_NAME}:${env.BUILD_NUMBER}")
-                    }
+                    sh 'docker build -t $IMAGE_NAME:$BUILD_NUMBER .'
                 }
             }
 
-            stage('Push Docker') {
+            stage('Docker Push') {
                 steps {
                     withCredentials([usernamePassword(
                         credentialsId: 'dockerhub',
@@ -39,7 +45,7 @@ def call(Map config = [:]) {
                         passwordVariable: 'DOCKER_PASS'
                     )]) {
                         sh '''
-                            echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
+                            echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin
                             docker push $IMAGE_NAME:$BUILD_NUMBER
                             docker logout
                         '''
