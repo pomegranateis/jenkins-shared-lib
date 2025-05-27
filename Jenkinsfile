@@ -1,5 +1,5 @@
 @Library('sharedLib') _
 
 nodePipeline(
-    imageName: 'pomegranatei/practical7'
+    imageName: 'pomegranatei/practical5-6'
 )
